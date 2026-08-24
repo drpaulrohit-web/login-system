@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <nav class="navbar">
+  <h2>My Dashboard</h2>
+  <button id="logoutBtn" class="logout-btn">Logout</button>
+</nav>
+
+<main class="dashboard-container">
+  <section class="welcome-card">
+    <h1>Welcome, <span id="userName">Loading...</span>! 🎉</h1>
+<p>You are successfully logged in.</p>
+  </section>
+
+  <section class="profile-card">
+    <h2>Your Profile</h2>
+
+<img
+  id="profileImage"
+  src=""
+  alt="Profile Photo"
+  class="profile-image"
+>
+
+<form id="photoForm" enctype="multipart/form-data">
+  <label for="profilePhoto">Profile Photo</label>
+
+  <input
+    type="file"
+    id="profilePhoto"
+    name="profilePhoto"
+    accept="image/*"
+  >
+
+  <br><br>
+
+  <button type="submit">Upload Photo</button>
+</form>
+
+<p id="uploadMessage"></p>
+
+    <div class="profile-info">
+      <span class="label">Email</span>
+      <span class="value" id="userEmail">Loading...</span>
+    </div>
+
+<form id="editProfileForm">
+  <h3>Edit Profile</h3>
+
+  <input
+    type="text"
+    id="newName"
+    placeholder="Enter your new name"
+    required
+  >
+
+  <button type="submit">Update Name</button>
+</form>
+
+<p id="profileMessage"></p>
+
+  </section>
+
+<section class="profile-card">
+  <h2>Change Password</h2>
+
+  <form id="changePasswordForm">
+    <input
+      type="password"
+      id="currentPassword"
+      placeholder="Current Password"
+      required
+    >
+
+    <input
+      type="password"
+      id="newPassword"
+      placeholder="New Password"
+      required
+    >
+
+    <input
+      type="password"
+      id="confirmPassword"
+      placeholder="Confirm New Password"
+      required
+    >
+
+    <button type="submit">Change Password</button>
+  </form>
+
+  <p id="passwordMessage"></p>
+</section>
+
+</main>
+
+<script>
+
+fetch("/api/me")
+  .then((response) => {
+    if (!response.ok) {
+      window.location.href = "/";
+      return;
+    }
+
+    return response.json();
+  })
+  .then((data) => {
+    if (data) {
+document.getElementById("userName").textContent =
+    data.name || "User";
+document.getElementById("userEmail").textContent = data.email;
+if (data.profilePhoto) {
+document.getElementById("profileImage").src = data.profilePhoto;
+	}
+     }
+  })
+  .catch(() => {
+    window.location.href = "/";
+  });
+
+document
+  .getElementById("photoForm")
+  .addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const fileInput =
+      document.getElementById("profilePhoto");
+
+    if (!fileInput.files[0]) {
+      document.getElementById("uploadMessage").textContent =
+        "Please select an image first.";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append(
+      "profilePhoto",
+      fileInput.files[0]
+    );
+
+    try {
+      const response = await fetch(
+        "/upload-profile-photo",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        document.getElementById("uploadMessage").textContent =
+          data.message || "Upload failed.";
+        return;
+      }
+
+      document.getElementById("uploadMessage").textContent =
+        "Profile photo uploaded successfully! 🎉";
+
+    } catch (error) {
+      document.getElementById("uploadMessage").textContent =
+        "Something went wrong!";
+    }
+  });
+
+document
+  .getElementById("editProfileForm")
+  .addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const newName =
+      document.getElementById("newName").value.trim();
+
+    const profileMessage =
+      document.getElementById("profileMessage");
+
+    try {
+      const response = await fetch("/edit-profile", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: newName
+        })
+      });
+
+      const data = await response.json();
+
+      profileMessage.textContent = data.message;
+
+      if (response.ok) {
+        // Dashboard-এর নাম সঙ্গে সঙ্গে update হবে
+        document.getElementById("userName").textContent =
+          data.name;
+
+        document
+          .getElementById("editProfileForm")
+          .reset();
+      }
+    } catch (error) {
+      profileMessage.textContent =
+        "Something went wrong!";
+    }
+  });
+
+document
+  .getElementById("changePasswordForm")
+  .addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const currentPassword =
+      document.getElementById("currentPassword").value;
+
+    const newPassword =
+      document.getElementById("newPassword").value;
+
+    const confirmPassword =
+      document.getElementById("confirmPassword").value;
+
+    const passwordMessage =
+      document.getElementById("passwordMessage");
+
+    if (newPassword !== confirmPassword) {
+      passwordMessage.textContent =
+        "New passwords do not match!";
+      return;
+    }
+
+    try {
+      const response = await fetch("/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+
+      const data = await response.json();
+
+      passwordMessage.textContent =
+        data.message;
+
+      if (response.ok) {
+        document
+          .getElementById("changePasswordForm")
+          .reset();
+      }
+    } catch (error) {
+      passwordMessage.textContent =
+        "Something went wrong!";
+    }
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    window.location.href = "/logout";
+  });
+</script>
+</body>
+</html>
