@@ -40,16 +40,13 @@ app.use(
 );
 
 // MySQL connection
-const databaseUrl = new URL(process.env.DATABASE_URL);
-
 const db = mysql.createConnection({
-  host: databaseUrl.hostname,
-  port: Number(databaseUrl.port) || 3306,
-  user: decodeURIComponent(databaseUrl.username),
-  password: decodeURIComponent(databaseUrl.password),
-  database: databaseUrl.pathname.slice(1)
+  host: process.env.MYSQLHOST,
+  port: Number(process.env.MYSQLPORT) || 3306,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE
 });
-
 
 //const db = mysql.createConnection({
  // host: process.env.DB_HOST,
