@@ -40,6 +40,11 @@ app.use(
 );
 
 // MySQL connection
+console.log("MYSQLHOST:", process.env.MYSQLHOST);
+console.log("MYSQLPORT:", process.env.MYSQLPORT);
+console.log("MYSQLDATABASE:", process.env.MYSQLDATABASE);
+console.log("MYSQLUSER:", process.env.MYSQLUSER);
+
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
   port: Number(process.env.MYSQLPORT) || 3306,
