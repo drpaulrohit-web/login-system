@@ -53,6 +53,9 @@ const db = mysql.createConnection({
   database: process.env.MYSQLDATABASE
 });
 
+console.log("DATABASE_URL exists:", !!process.env.DATABASE_URL);
+console.log("DATABASE_URL length:", process.env.DATABASE_URL?.length);
+
 db.connect((err) => {
   if (err) {
     console.error("Database connection failed:", err);
